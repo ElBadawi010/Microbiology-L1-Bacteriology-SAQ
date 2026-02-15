@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Written Exam</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #008080; --secondary: #004d4d; --accent: #ff9800; --bg: #f0f4f8; --text: #2d3436; --white: #ffffff; --success: #2ecc71; --error: #e74c3c; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: var(--white); width: 95%; max-width: 750px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 25px; text-align: center; position: relative; }
+        
+        header h1 { color: var(--primary); margin: 0; font-size: 1.4rem; letter-spacing: 0.5px; }
+        .btn { background: linear-gradient(45deg, var(--primary), var(--secondary)); color: white; border: none; padding: 12px 30px; font-size: 1rem; border-radius: 50px; cursor: pointer; font-family: 'Poppins', sans-serif; margin-top: 15px; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0,128,128,0.3); font-weight: 600; }
+        .btn:hover { transform: scale(1.02); }
+        .btn-yes { background: var(--success); width: 45%; margin: 5px; }
+        .btn-no { background: var(--error); width: 45%; margin: 5px; }
+        
+        .question-box { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; text-align: left; color: var(--secondary); line-height: 1.6; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        .badge { display: inline-block; background: var(--accent); color: white; padding: 4px 12px; border-radius: 4px; font-size: 0.85rem; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; }
+        
+        .essay-area { width: 95%; height: 150px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-family: inherit; font-size: 1rem; margin-bottom: 15px; resize: vertical; background: #fafafa; }
+        .essay-area:focus { border-color: var(--primary); outline: none; background: #fff; }
+        
+        .model-answer-box { display: none; background: #e8f4f8; border-left: 5px solid var(--primary); padding: 20px; margin-top: 20px; text-align: left; border-radius: 8px; font-size: 0.95rem; line-height: 1.6; white-space: pre-line; }
+        
+        .screen { display: none; animation: fadeIn 0.4s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .progress-bar { width: 100%; height: 8px; background: #eee; margin: 20px 0; border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s ease; }
+        
+        .contact-card { background: #f8f9fa; border: 1px dashed var(--primary); padding: 20px; border-radius: 12px; margin: 20px 0; }
+        .social-btns { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+        .social-link { text-decoration: none; padding: 10px 20px; border-radius: 50px; font-size: 0.9rem; color: white; }
+        .telegram { background: #0088cc; }
+        .whatsapp { background: #25d366; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="start-screen" class="screen active">
+        <header>
+            <h1>ElBadawi Med Academy 🩺</h1>
+            <p>Dr. El-Sayed El-Badawy</p>
+        </header>
+        <div style="margin: 25px 0;"><img src="https://cdn-icons-png.flaticon.com/512/3063/3063205.png" width="90"></div>
+        <h3 id="quiz-title-display" style="color:var(--accent);">Written Exam</h3>
+        <p>20 Questions | Diverse Types (Cases, Enumerate, Reason)</p>
+        <p style="font-size:0.8rem; color:#777;">90 Seconds per Question</p>
+        <button class="btn" onclick="startQuiz()">Start Exam</button>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
+        <div id="timer" style="color:var(--error); font-weight:bold; margin-bottom:10px;"></div>
+        
+        <span id="q-type" class="badge">Question Type</span>
+        <div class="question-box" id="question-text"></div>
+        
+        <textarea class="essay-area" id="user-input" placeholder="Type your answer here... (Self-check mode)"></textarea>
+        
+        <button id="show-model-btn" class="btn" onclick="showModelAnswer()">👁️ Show Model Answer</button>
+        
+        <div id="model-answer-display" class="model-answer-box">
+            <strong>📝 Model Answer:</strong><br>
+            <span id="model-text"></span>
+        </div>
+        
+        <div id="self-grade-section" style="display:none; margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
+            <p style="font-weight:600; margin-bottom:10px;">Compare your answer. Did you get the key points?</p>
+            <div style="display:flex; justify-content:center;">
+                <button class="btn btn-yes" onclick="grade(true)">✅ Yes (Correct)</button>
+                <button class="btn btn-no" onclick="grade(false)">❌ No (Incorrect)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h2>Exam Complete!</h2>
+        <div style="font-size:3rem; font-weight:bold; color:var(--primary);" id="final-score">0%</div>
+        <div style="background:var(--accent); color:white; padding:5px 20px; border-radius:20px; font-weight:700; margin-bottom:20px;" id="rank-text">Student</div>
+        
+        <div class="contact-card">
+            <strong>👨‍⚕️ Send Score to Dr. El-Sayed:</strong>
+            <p style="margin:5px 0 10px 0;">Please forward your result.</p>
+            <div style="font-weight:600;">📱 01065615878 | 💬 @ElBadawi010</div>
+            <div class="social-btns">
+                <a href="#" id="tg-share" target="_blank" class="social-link telegram">Telegram</a>
+                <a href="#" id="wa-share" target="_blank" class="social-link whatsapp">WhatsApp</a>
+            </div>
+        </div>
+        <button class="btn" onclick="location.reload()">Restart 🔄</button>
+    </div>
+    <footer style="margin-top:25px; font-size:0.8rem; color:#aaa;">Prepared by: Dr. El-Sayed El-Badawy</footer>
+</div>
+
+<audio id="sound-correct" src="https://actions.google.com/sounds/v1/cartoon/magic_chime.ogg"></audio>
+<audio id="sound-wrong" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+
+<script>
+    // ==========================================
+    // AI: FILL THIS ARRAY WITH 20 WRITTEN QUESTIONS
+    // ==========================================
+    const quizTitle = "General Bacteriology & Cell Structure"; 
+
+    const essayQuestions = [
+        { 
+          type: "Clinical Case",
+          question: "A 25-year-old patient presents with a fever. A throat swab is taken, and microscopy reveals Gram-positive cocci in chains. The cell wall is described as having a very thick peptidoglycan layer. What is the specific acidic polymer found in this cell wall that acts as a major surface antigen?", 
+          modelAnswer: "1. The bacteria is Gram-Positive.\n2. The specific polymer is **Teichoic Acid**.\n3. Teichoic acid is unique to Gram-positive cell walls and acts as a major surface antigen." 
+        },
+        { 
+          type: "Clinical Case",
+          question: "A patient presents with symptoms of endotoxic shock (fever, hypotension). The lab isolates a Gram-negative bacterium. Which specific component of the bacterial outer membrane is responsible for this toxicity?", 
+          modelAnswer: "1. The component is **Lipopolysaccharide (LPS)**.\n2. Specifically, the **Lipid A** portion of the LPS acts as the Endotoxin." 
+        },
+        { 
+          type: "Clinical Case",
+          question: "A sputum sample from a pneumonia patient reveals bacteria surrounded by a thick, gelatinous layer that is not easily stained. This layer protects the bacteria from phagocytosis. Identify this structure and its chemical composition.", 
+          modelAnswer: "1. Structure: **Capsule**.\n2. Composition: Mostly **Polysaccharide** (except B. anthracis which is polypeptide).\n3. Function: Anti-phagocytic." 
+        },
+        { 
+          type: "Clinical Case",
+          question: "A patient with a urinary tract infection (UTI) has bacteria that firmly adhere to the epithelial lining of the bladder, preventing them from being flushed out by urine. Which short, rigid surface appendage is primarily responsible for this adhesion?", 
+          modelAnswer: "1. Structure: **Fimbriae (Ordinary Pili)**.\n2. Function: Adherence/Attachment to host cells and tissues (colonization)." 
+        },
+        { 
+          type: "Clinical Case",
+          question: "You are examining a slide of *Vibrio cholerae* isolated from a patient with watery diarrhea. You observe rapid movement. What type of flagellar arrangement does this organism typically exhibit?", 
+          modelAnswer: "1. Arrangement: **Monotrichous** (or Polar).\n2. Description: A single flagellum at one pole." 
+        },
+        { 
+          type: "Enumerate/List",
+          question: "Enumerate 4 major differences between Prokaryotic and Eukaryotic cells.", 
+          modelAnswer: "1. **Nuclear Membrane:** Absent in Prokaryotes vs. Present in Eukaryotes.\n2. **Chromosomes:** One (Haploid) in Prokaryotes vs. Two (Diploid) in Eukaryotes.\n3. **Ribosomes:** 70S in Prokaryotes vs. 80S in Eukaryotes.\n4. **Organelles:** Membrane-bound organelles (Mitochondria, Golgi) are absent in Prokaryotes." 
+        },
+        { 
+          type: "Enumerate/List",
+          question: "List 4 functions of the Bacterial Cell Wall.", 
+          modelAnswer: "1. Preservation of cell shape.\n2. Protection against high internal osmotic pressure.\n3. Antigenic character (Teichoic acid/LPS).\n4. Plays a role in cell division.\n5. Target for antibiotics (e.g., Penicillin)." 
+        },
+        { 
+          type: "Enumerate/List",
+          question: "Enumerate the types of bacterial flagellar arrangements.", 
+          modelAnswer: "1. **Monotrichous:** Single flagellum at one pole.\n2. **Lophotrichous:** Tuft of flagella at one pole.\n3. **Amphitrichous:** Flagella at both poles.\n4. **Peritrichous:** Flagella all over the bacterial surface." 
+        },
+        { 
+          type: "Enumerate/List",
+          question: "List the components of the Gram-Negative Cell Envelope (from inside to out).", 
+          modelAnswer: "1. Cytoplasmic Membrane.\n2. Periplasmic Space.\n3. Thin Peptidoglycan Layer.\n4. Outer Membrane (containing Lipoproteins and Lipopolysaccharides)." 
+        },
+        { 
+          type: "Enumerate/List",
+          question: "List the functions of the Bacterial Cytoplasmic Membrane.", 
+          modelAnswer: "1. Transport and selective permeability.\n2. Electron transport and oxidative phosphorylation (respiration).\n3. Excretion of hydrolytic enzymes and toxins.\n4. Biosynthetic functions (cell wall and lipid synthesis)." 
+        },
+        { 
+          type: "Give Reason",
+          question: "Give Reason: Gram-negative bacteria are generally more resistant to Penicillin and Lysozyme than Gram-positive bacteria.", 
+          modelAnswer: "Because Gram-negative bacteria possess an **Outer Membrane** and a **Periplasmic Space** that contains hydrolytic enzymes and **Penicillinase**, which degrade antibiotics before they reach the peptidoglycan target." 
+        },
+        { 
+          type: "Give Reason",
+          question: "Give Reason: The bacterial capsule is considered a major virulence factor.", 
+          modelAnswer: "Because it inhibits **phagocytosis** by white blood cells, allowing the bacteria to survive and multiply within the host." 
+        },
+        { 
+          type: "Give Reason",
+          question: "Give Reason: Bacterial ribosomes are a selective target for certain antibiotics (like erythromycin or tetracycline) without harming human cells.", 
+          modelAnswer: "Because bacterial ribosomes are **70S** (composed of 30S and 50S subunits), whereas human (eukaryotic) ribosomes are **80S**. Antibiotics specifically target the 70S structure." 
+        },
+        { 
+          type: "Give Reason",
+          question: "Give Reason: *Mycobacterium tuberculosis* is not stained by the standard Gram stain method.", 
+          modelAnswer: "Because its cell wall contains a high concentration of lipids (Mycolic acid), which prevents the uptake of Gram stain dyes. It requires **Ziehl-Neelsen** staining." 
+        },
+        { 
+          type: "Give Reason",
+          question: "Give Reason: Flagella are medically important beyond just providing motility.", 
+          modelAnswer: "Because they are highly **antigenic (H-antigens)**, which is useful for serological identification and classification of bacteria." 
+        },
+        { 
+          type: "Definitions/Short Notes",
+          question: "Write a short note on the structure of Peptidoglycan (Mucopeptide).", 
+          modelAnswer: "It is a complex polymer consisting of a backbone of alternating **N-acetyl-glucosamine (NAG)** and **N-acetyl-muramic acid (NAM)**, cross-linked by **tetrapeptide side chains** (amino acids) attached to the NAM." 
+        },
+        { 
+          type: "Definitions/Short Notes",
+          question: "Differentiate between 'Sex Pili' and 'Ordinary Pili' (Fimbriae).", 
+          modelAnswer: "**Ordinary Pili:** Shorter, numerous, used for adhesion/colonization.\n**Sex Pili:** Longer, fewer (1-2), hollow tubes used for conjugation (transfer of DNA)." 
+        },
+        { 
+          type: "Definitions/Short Notes",
+          question: "Define the 'Periplasmic Space' and mention its location.", 
+          modelAnswer: "Location: The space between the cytoplasmic membrane and the outer membrane in **Gram-negative bacteria**.\nFunction: It contains a gel-like substance with hydrolytic enzymes and binding proteins." 
+        },
+        { 
+          type: "Definitions/Short Notes",
+          question: "Short note on the 'Nucleoid' in bacteria.", 
+          modelAnswer: "It is the nuclear body of the bacteria (Prokaryote). It lacks a nuclear membrane. It consists of a **single, circular, double-stranded DNA** chromosome (Haploid)." 
+        },
+        { 
+          type: "Definitions/Short Notes",
+          question: "Compare the thickness and composition of the Peptidoglycan layer in Gram-positive vs. Gram-negative bacteria.", 
+          modelAnswer: "**Gram-Positive:** Thick layer (up to 40 sheets), makes up 50% of cell wall.\n**Gram-Negative:** Thin layer (1-2 sheets), makes up only 5-10% of cell wall." 
+        }
+    ];
+    // ==========================================
+
+    let currentIndex = 0;
+    let score = 0;
+    let timer;
+    const timePerQuestion = 90; // 90 seconds for written
+
+    document.getElementById('quiz-title-display').innerText = quizTitle;
+
+    function startQuiz() {
+        document.getElementById('start-screen').classList.remove('active');
+        document.getElementById('quiz-screen').classList.add('active');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        if (currentIndex >= essayQuestions.length) {
+            showResults();
+            return;
+        }
+        
+        // Reset UI
+        document.getElementById('model-answer-display').style.display = 'none';
+        document.getElementById('self-grade-section').style.display = 'none';
+        document.getElementById('show-model-btn').style.display = 'inline-block';
+        document.getElementById('user-input').value = "";
+        
+        const q = essayQuestions[currentIndex];
+        document.getElementById('q-type').innerText = q.type;
+        document.getElementById('question-text').innerText = (currentIndex + 1) + ". " + q.question;
+        document.getElementById('progress').style.width = ((currentIndex / essayQuestions.length) * 100) + "%";
+        
+        startTimer();
+    }
+
+    function startTimer() {
+        let timeLeft = timePerQuestion;
+        document.getElementById('timer').innerText = `⏳ ${timeLeft}s`;
+        clearInterval(timer);
+        timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').innerText = `⏳ ${timeLeft}s`;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                showModelAnswer(); // Auto-show answer on timeout
+            }
+        }, 1000);
+    }
+
+    function showModelAnswer() {
+        clearInterval(timer);
+        const q = essayQuestions[currentIndex];
+        document.getElementById('model-text').innerText = q.modelAnswer;
+        document.getElementById('model-answer-display').style.display = 'block';
+        document.getElementById('self-grade-section').style.display = 'block';
+        document.getElementById('show-model-btn').style.display = 'none';
+    }
+
+    function grade(isCorrect) {
+        if (isCorrect) {
+            score++;
+            playSound('correct');
+        } else {
+            playSound('wrong');
+        }
+        currentIndex++;
+        loadQuestion();
+    }
+
+    function showResults() {
+        document.getElementById('quiz-screen').classList.remove('active');
+        document.getElementById('result-screen').classList.add('active');
+        
+        const percentage = Math.round((score / essayQuestions.length) * 100);
+        document.getElementById('final-score').innerText = percentage + "%";
+        
+        let rank = "Fail (راسب)";
+        if (percentage >= 90) rank = "Excellent (ممتاز) 🌟";
+        else if (percentage >= 80) rank = "Very Good (جيد جداً) 👏";
+        else if (percentage >= 65) rank = "Good (جيد) 👍";
+        else if (percentage >= 50) rank = "Pass (مقبول) 😐";
+        
+        document.getElementById('rank-text').innerText = rank;
+
+        const message = `Hello Dr. El-Sayed, I completed the Written Exam: [${quizTitle}]\nScore: ${percentage}% (${score}/${essayQuestions.length})\nRank: ${rank}`;
+        const encodedMsg = encodeURIComponent(message);
+        
+        document.getElementById('tg-share').href = `https://t.me/ELBADAWI010?text=${encodedMsg}`;
+        document.getElementById('wa-share').href = `https://wa.me/201065615878?text=${encodedMsg}`;
+    }
+
+    function playSound(type) {
+        const id = type === 'correct' ? 'sound-correct' : 'sound-wrong';
+        document.getElementById(id).play().catch(e => {});
+    }
+</script>
+</body>
+</html>
